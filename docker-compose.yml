@@ -1,0 +1,47 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: code-notes-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: code_notes
+      POSTGRES_USER: code_notes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - code_notes_postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: code-notes-backend
+    restart: unless-stopped
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: code_notes
+      DB_USER: code_notes
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: code-notes-frontend
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+    ports:
+      - "80:80"
+
+volumes:
+  code_notes_postgres_data:

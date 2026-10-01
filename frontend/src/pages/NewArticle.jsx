@@ -1,0 +1,173 @@
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+
+import {
+  getArticle,
+  createArticle,
+  updateArticle,
+} from '../api/articles';
+
+function NewArticle() {
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(id);
+
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+
+    async function fetchArticle() {
+      try {
+        const article = await getArticle(id);
+
+        setTitle(article.title);
+        setCategory(article.category);
+        setDescription(article.description || '');
+        setContent(article.content);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchArticle();
+  }, [id, isEditMode]);
+
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const articleData = {
+      title,
+      category,
+      description,
+      content,
+    };
+
+    try {
+      if (isEditMode) {
+        await updateArticle(id, articleData);
+      } else {
+        await createArticle(articleData);
+      }
+
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  return (
+    <main className="editor-page">
+      <div className="editor-topbar">
+        <Link to="/" className="editor-back">
+          ← All notes
+        </Link>
+
+        <div className="editor-actions">
+          <span className="editor-status">
+            {isEditMode ? 'Editing' : 'Draft'}
+          </span>
+
+          <button
+            type="submit"
+            form="article-form"
+            className="save-button"
+          >
+            {isEditMode ? 'Update article' : 'Save article'}
+          </button>
+        </div>
+      </div>
+
+      <form
+        id="article-form"
+        className="editor"
+        onSubmit={handleSubmit}
+      >
+        <section className="editor-panel">
+          <input
+            className="editor-title"
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Article title"
+          />
+
+          <div className="editor-meta">
+            <input
+              type="text"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              placeholder="Category"
+            />
+
+            <input
+              type="text"
+              value={description}
+              onChange={(event) =>
+                setDescription(event.target.value)
+              }
+              placeholder="Short description"
+            />
+          </div>
+
+          <textarea
+            className="markdown-editor"
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder={`# Start writing...
+
+Use Markdown for your notes.
+
+## Example
+
+\`\`\`java
+Map<String, Integer> map = new HashMap<>();
+\`\`\``}
+          />
+        </section>
+
+        <section className="preview-panel">
+          <div className="preview-header">
+            <span>PREVIEW</span>
+          </div>
+
+          <article className="article-preview">
+            {title && <h1>{title}</h1>}
+
+            {description && (
+              <p className="preview-description">
+                {description}
+              </p>
+            )}
+
+            {category && (
+              <span className="category">{category}</span>
+            )}
+
+            <div className="article-content">
+              {content ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {content}
+                </ReactMarkdown>
+              ) : (
+                <div className="empty-preview">
+                  Your article preview will appear here.
+                </div>
+              )}
+            </div>
+          </article>
+        </section>
+      </form>
+    </main>
+  );
+}
+
+export default NewArticle;
