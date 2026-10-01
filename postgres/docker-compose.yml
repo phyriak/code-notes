@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:17
     container_name: code-notes-postgres
@@ -13,8 +12,12 @@ services:
     volumes:
       - code_notes_postgres_data:/var/lib/postgresql/data
 
+    ports:
+      - "55432:5432"
+
   backend:
-    image: phyriak/code-notes-backend:latest
+    build:
+      context: ./backend
     container_name: code-notes-backend
     restart: unless-stopped
 
@@ -28,16 +31,8 @@ services:
     depends_on:
       - postgres
 
-  frontend:
-    image: phyriak/code-notes-frontend:latest
-    container_name: code-notes-frontend
-    restart: unless-stopped
-
-    depends_on:
-      - backend
-
     ports:
-      - "8085:80"
+      - "3100:3000"
 
 volumes:
   code_notes_postgres_data:
