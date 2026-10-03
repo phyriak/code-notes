@@ -19,7 +19,7 @@ function App() {
   async function fetchCategories() {
     try {
       const response = await fetch(
-        'http://localhost:3100/api/categories'
+        'http://localhost:3200/api/categories'
       );
 
       if (!response.ok) {

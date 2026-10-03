@@ -64,6 +64,45 @@ function NewArticle() {
     }
   }
 
+  async function handleImageUpload(event) {
+    const file = event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('http://localhost:3200/api/images', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+
+      const data = await response.json();
+
+      const markdown = `![${file.name}](${data.url})`;
+
+      setContent((currentContent) => {
+        if (currentContent.length === 0) {
+          return markdown;
+        }
+
+        return `${currentContent}\n\n${markdown}`;
+      });
+    } catch (error) {
+      console.error(error);
+      alert('Failed to upload image');
+    } finally {
+      event.target.value = '';
+    }
+  }
+
   return (
     <main className="editor-page">
       <div className="editor-topbar">
@@ -107,6 +146,20 @@ function NewArticle() {
               onChange={(event) => setCategory(event.target.value)}
               placeholder="Category"
             />
+
+            <div className="image-upload">
+              <label htmlFor="image-upload" className="image-upload-button">
+                Add image
+              </label>
+
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={handleImageUpload}
+                hidden
+              />
+            </div>
 
             <input
               type="text"

@@ -1,13 +1,66 @@
-const express = require('express');
-const cors = require('cors');
-const pool = require('./db');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import crypto from 'crypto';
+import cors from 'cors';
+import pool from './db.js';
 
 const app = express();
+console.log('SERVER.JS LOADED');
 
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log('REQUEST:', req.method, req.url);
+  next();
+});
+
+app.use(
+  '/uploads',
+  express.static('/app/uploads')
+);
+
+//Multer
+
+const storage = multer.diskStorage({
+  destination: '/app/uploads',
+
+  filename: (req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    const filename = `${crypto.randomUUID()}${extension}`;
+
+    cb(null, filename);
+  },
+});
+
+const upload = multer({
+  storage,
+
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
+  },
+
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error('Only image files are allowed'));
+    }
+
+    cb(null, true);
+  },
+});
+//
+
 app.get('/api/articles', async (req, res) => {
+console.log('ARTICLES ENDPOINT HIT');
+
   try {
     const result = await pool.query(
       'SELECT * FROM articles ORDER BY created_at DESC'
@@ -192,8 +245,22 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
+app.post('/api/images', upload.single('image'), (req, res) => {
+  console.log('IMAGE UPLOAD HANDLER');
 
-const PORT = 3000;
+  if (!req.file) {
+    return res.status(400).json({
+      error: 'No image uploaded',
+    });
+  }
+
+  res.status(201).json({
+    url: `/uploads/${req.file.filename}`,
+  });
+});
+
+
+const PORT = 3200;
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
