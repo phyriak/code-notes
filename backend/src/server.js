@@ -259,6 +259,10 @@ app.post('/api/images', upload.single('image'), (req, res) => {
   });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'UP' });
+});
+
 
 const PORT = 3200;
 

@@ -82,10 +82,10 @@ jobs:
             echo "Waiting for application..."
 
             for i in {1..12}; do
-              if curl -f http://localhost:8085; then
+              if curl -f http://localhost:3200/api/health; then
                 echo "Code Notes is UP"
 
-                docker image prune -af
+                docker image prune -f
 
                 exit 0
               fi
