@@ -27,6 +27,9 @@ services:
 
     depends_on:
       - postgres
+    
+    ports:
+    - "3200:3200"
 
   frontend:
     image: phyriak/code-notes-frontend:latest
