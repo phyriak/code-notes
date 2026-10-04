@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 import {
   MDXEditor,
@@ -58,7 +59,7 @@ function NewArticle() {
         setContent(articleContent);
 
         // MDXEditor nie jest w pełni controlled component.
-        // Dlatego ustawiamy zawartość bezpośrednio w edytorze.
+        // Ustawiamy zawartość bezpośrednio po pobraniu artykułu.
         editorRef.current?.setMarkdown(articleContent);
       } catch (error) {
         console.error('Failed to fetch article:', error);
@@ -102,11 +103,18 @@ function NewArticle() {
     try {
       const data = await uploadImage(file);
 
-      // Domyślna szerokość obrazu
-      const markdown =
-        `![${file.name}](${data.url} "width=80%")`;
+      /*
+       * Nowy obraz zapisujemy jako zwykły Markdown.
+       *
+       * MDXEditor imagePlugin obsługuje ten format:
+       *
+       * ![filename](url)
+       *
+       * Jeżeli później zmienimy rozmiar obrazu w edytorze,
+       * MDXEditor zapisze go jako <img> z width/height.
+       */
+      const markdown = `![${file.name}](${data.url})`;
 
-      // Wstawiamy obraz w aktualnym miejscu kursora.
       editorRef.current?.insertMarkdown(
         `\n\n${markdown}\n\n`
       );
@@ -142,6 +150,7 @@ function NewArticle() {
           </button>
 
         </div>
+
       </div>
 
       <form
@@ -150,7 +159,9 @@ function NewArticle() {
         onSubmit={handleSubmit}
       >
 
+        {/* ========================= */}
         {/* EDITOR */}
+        {/* ========================= */}
 
         <section className="editor-panel">
 
@@ -210,23 +221,39 @@ function NewArticle() {
               markdown={content}
               onChange={setContent}
               plugins={[
+
                 headingsPlugin(),
+
                 listsPlugin(),
+
                 quotePlugin(),
+
                 thematicBreakPlugin(),
+
                 markdownShortcutPlugin(),
 
+                /*
+                 * Obsługa obrazów:
+                 *
+                 * - Markdown images
+                 * - HTML <img>
+                 * - resize obrazów
+                 * - ustawienia obrazu
+                 */
                 imagePlugin(),
 
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
                       <UndoRedo />
+
                       <BoldItalicUnderlineToggles />
+
                       <CreateLink />
                     </>
                   ),
                 }),
+
               ]}
             />
 
@@ -234,7 +261,9 @@ function NewArticle() {
 
         </section>
 
+        {/* ========================= */}
         {/* PREVIEW */}
+        {/* ========================= */}
 
         <section className="preview-panel">
 
@@ -265,28 +294,20 @@ function NewArticle() {
               {content ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                   components={{
-                    img: ({ node, ...props }) => {
 
-                      const widthMatch =
-                        props.title?.match(/width=(\d+)%/);
+                    img: ({ node, ...props }) => (
+                      <img
+                        {...props}
+                        style={{
+                          maxWidth: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    ),
 
-                      const width = widthMatch
-                        ? `${widthMatch[1]}%`
-                        : '80%';
-
-                      return (
-                        <img
-                          {...props}
-                          title={undefined}
-                          style={{
-                            width,
-                            height: 'auto',
-                            display: 'block',
-                          }}
-                        />
-                      );
-                    },
                   }}
                 >
                   {content}
