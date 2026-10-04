@@ -120,7 +120,26 @@ function Article() {
         <hr />
 
         <div className="article-content">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              img: ({ node, ...props }) => {
+                const width = props.title?.replace('width:', '') || '100%';
+
+                return (
+                  <img
+                    {...props}
+                    title={undefined}
+                    style={{
+                      width,
+                      height: 'auto',
+                      display: 'block',
+                    }}
+                  />
+                );
+              },
+            }}
+          >
             {article.content}
           </ReactMarkdown>
         </div>

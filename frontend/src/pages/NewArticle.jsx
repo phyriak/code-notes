@@ -214,10 +214,8 @@ Map<String, Integer> map = new HashMap<>();
                   remarkPlugins={[remarkGfm]}
                   components={{
                     img: ({ node, ...props }) => {
-                      const title = props.title || '';
-                      const match = title.match(/width=(\d+)%/);
-
-                      const width = match ? `${match[1]}%` : '100%';
+                      const widthMatch = props.title?.match(/width=(\d+)%/);
+                      const width = widthMatch ? `${widthMatch[1]}%` : '100%';
 
                       return (
                         <img
@@ -225,8 +223,8 @@ Map<String, Integer> map = new HashMap<>();
                           title={undefined}
                           style={{
                             width,
-                            maxWidth: '100%',
                             height: 'auto',
+                            display: 'block',
                           }}
                         />
                       );
