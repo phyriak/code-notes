@@ -1,7 +1,22 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+
+import {
+  MDXEditor,
+  headingsPlugin,
+  listsPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  markdownShortcutPlugin,
+  imagePlugin,
+  toolbarPlugin,
+  UndoRedo,
+  BoldItalicUnderlineToggles,
+  CreateLink,
+  InsertImage,
+} from '@mdxeditor/editor';
+
+import '@mdxeditor/editor/style.css';
 
 import {
   getArticle,
@@ -15,7 +30,6 @@ function NewArticle() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
-  const [imageWidth, setImageWidth] = useState(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,9 +48,9 @@ function NewArticle() {
         setTitle(article.title);
         setCategory(article.category);
         setDescription(article.description || '');
-        setContent(article.content);
+        setContent(article.content || '');
       } catch (error) {
-        console.error(error);
+        console.error('Failed to fetch article:', error);
       }
     }
 
@@ -62,65 +76,20 @@ function NewArticle() {
 
       navigate('/');
     } catch (error) {
-      console.error(error);
+      console.error('Failed to save article:', error);
+      alert('Failed to save article');
     }
   }
 
-  async function handleImageUpload(event) {
-    const file = event.target.files[0];
-
-    if (!file) {
-      return;
-    }
-
+  async function handleImageUpload(file) {
     try {
       const data = await uploadImage(file);
 
-      const defaultWidth = 80;
-
-      const markdown =
-        `![${file.name}](${data.url} "width=${defaultWidth}%")`;
-
-      setContent((currentContent) => {
-        if (currentContent.length === 0) {
-          return markdown;
-        }
-
-        return `${currentContent}\n\n${markdown}`;
-      });
-
-      setImageWidth({
-        url: data.url,
-        alt: file.name,
-        width: defaultWidth,
-      });
+      return data.url;
     } catch (error) {
-      console.error(error);
-      alert('Failed to upload image');
-    } finally {
-      event.target.value = '';
+      console.error('Failed to upload image:', error);
+      throw error;
     }
-  }
-
-  function changeImageWidth(width) {
-    if (!imageWidth) {
-      return;
-    }
-
-    const oldMarkdown =
-      `![${imageWidth.alt}](${imageWidth.url} "width=${imageWidth.width}%")`;
-
-    const newMarkdown =
-      `![${imageWidth.alt}](${imageWidth.url} "width=${width}%")`;
-
-    setContent((currentContent) =>
-      currentContent.replace(oldMarkdown, newMarkdown)
-    );
-
-    setImageWidth((current) => ({
-      ...current,
-      width,
-    }));
   }
 
   return (
@@ -167,44 +136,6 @@ function NewArticle() {
                 onChange={(event) => setCategory(event.target.value)}
                 placeholder="Category"
               />
-
-              <div className="image-upload">
-                <label
-                  htmlFor="image-upload"
-                  className="image-upload-button"
-                >
-                  Add image
-                </label>
-
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  onChange={handleImageUpload}
-                  hidden
-                />
-
-                {imageWidth && (
-                  <div className="image-size-picker">
-                    <span>Image size:</span>
-
-                    {[25, 50, 75, 80, 100].map((width) => (
-                      <button
-                        key={width}
-                        type="button"
-                        className={
-                          imageWidth.width === width
-                            ? 'active'
-                            : ''
-                        }
-                        onClick={() => changeImageWidth(width)}
-                      >
-                        {width}%
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             <input
@@ -215,20 +146,37 @@ function NewArticle() {
             />
           </div>
 
-          <textarea
-            className="markdown-editor"
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            placeholder={`# Start writing...
+          <div className="markdown-editor">
+            <MDXEditor
+              markdown={content}
+              onChange={setContent}
+              plugins={[
+                headingsPlugin(),
+                listsPlugin(),
+                quotePlugin(),
+                thematicBreakPlugin(),
+                markdownShortcutPlugin(),
 
-Use Markdown for your notes.
+                imagePlugin({
+                  imageUploadHandler: handleImageUpload,
+                }),
 
-## Example
+                toolbarPlugin({
+                  toolbarContents: () => (
+                    <>
+                      <UndoRedo />
 
-\`\`\`java
-Map<String, Integer> map = new HashMap<>();
-\`\`\``}
-          />
+                      <BoldItalicUnderlineToggles />
+
+                      <CreateLink />
+
+                      <InsertImage />
+                    </>
+                  ),
+                }),
+              ]}
+            />
+          </div>
         </section>
 
         <section className="preview-panel">
@@ -246,38 +194,26 @@ Map<String, Integer> map = new HashMap<>();
             )}
 
             {category && (
-              <span className="category">{category}</span>
+              <span className="category">
+                {category}
+              </span>
             )}
 
             <div className="article-content">
               {content ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    img: ({ node, ...props }) => {
-                      const widthMatch =
-                        props.title?.match(/width=(\d+)%/);
-
-                      const width = widthMatch
-                        ? `${widthMatch[1]}%`
-                        : '100%';
-
-                      return (
-                        <img
-                          {...props}
-                          title={undefined}
-                          style={{
-                            width,
-                            height: 'auto',
-                            display: 'block',
-                          }}
-                        />
-                      );
-                    },
-                  }}
-                >
-                  {content}
-                </ReactMarkdown>
+                <div className="markdown-preview">
+                  <MDXEditor
+                    markdown={content}
+                    readOnly
+                    plugins={[
+                      headingsPlugin(),
+                      listsPlugin(),
+                      quotePlugin(),
+                      thematicBreakPlugin(),
+                      markdownShortcutPlugin(),
+                    ]}
+                  />
+                </div>
               ) : (
                 <div className="empty-preview">
                   Your article preview will appear here.
@@ -292,3 +228,4 @@ Map<String, Integer> map = new HashMap<>();
 }
 
 export default NewArticle;
+
