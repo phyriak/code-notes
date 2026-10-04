@@ -1162,3 +1162,10 @@ form.editor {
 .image-upload-button:hover {
   background: #f8fafc;
 }
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px 0;
+}

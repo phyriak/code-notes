@@ -64,6 +64,7 @@ function NewArticle() {
       console.error(error);
     }
   }
+  const [imageWidth, setImageWidth] = useState('100%');
 
   async function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -75,7 +76,16 @@ function NewArticle() {
     try {
       const data = await uploadImage(file);
 
-      const markdown = `![${file.name}](${data.url})`;
+      const width = window.prompt(
+        'Image width: 25, 50, 75 or 100',
+        '100'
+      );
+
+      const selectedWidth = ['25', '50', '75', '100'].includes(width)
+        ? width
+        : '100';
+
+      const markdown = `![image](${data.url} "width=${selectedWidth}%")`;
 
       setContent((currentContent) => {
         if (currentContent.length === 0) {
@@ -91,7 +101,6 @@ function NewArticle() {
       event.target.value = '';
     }
   }
-
   return (
     <main className="editor-page">
       <div className="editor-topbar">
@@ -183,7 +192,29 @@ Map<String, Integer> map = new HashMap<>();
 
             <div className="article-content">
               {content ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    img: ({ node, ...props }) => {
+                      const title = props.title || '';
+                      const match = title.match(/width=(\d+)%/);
+
+                      const width = match ? `${match[1]}%` : '100%';
+
+                      return (
+                        <img
+                          {...props}
+                          title={undefined}
+                          style={{
+                            width,
+                            maxWidth: '100%',
+                            height: 'auto',
+                          }}
+                        />
+                      );
+                    },
+                  }}
+                >
                   {content}
                 </ReactMarkdown>
               ) : (
