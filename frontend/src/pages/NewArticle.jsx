@@ -7,7 +7,7 @@ import {
   getArticle,
   createArticle,
   updateArticle,
-  uploadImage
+  uploadImage,
 } from '../api/articles';
 
 function NewArticle() {
@@ -16,10 +16,11 @@ function NewArticle() {
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [imageWidth, setImageWidth] = useState(null);
+
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEditMode = Boolean(id);
 
+  const isEditMode = Boolean(id);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -41,7 +42,6 @@ function NewArticle() {
 
     fetchArticle();
   }, [id, isEditMode]);
-
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -66,7 +66,6 @@ function NewArticle() {
     }
   }
 
-
   async function handleImageUpload(event) {
     const file = event.target.files[0];
 
@@ -77,9 +76,23 @@ function NewArticle() {
     try {
       const data = await uploadImage(file);
 
+      const defaultWidth = 80;
+
+      const markdown =
+        `![${file.name}](${data.url} "width=${defaultWidth}%")`;
+
+      setContent((currentContent) => {
+        if (currentContent.length === 0) {
+          return markdown;
+        }
+
+        return `${currentContent}\n\n${markdown}`;
+      });
+
       setImageWidth({
         url: data.url,
         alt: file.name,
+        width: defaultWidth,
       });
     } catch (error) {
       console.error(error);
@@ -89,6 +102,26 @@ function NewArticle() {
     }
   }
 
+  function changeImageWidth(width) {
+    if (!imageWidth) {
+      return;
+    }
+
+    const oldMarkdown =
+      `![${imageWidth.alt}](${imageWidth.url} "width=${imageWidth.width}%")`;
+
+    const newMarkdown =
+      `![${imageWidth.alt}](${imageWidth.url} "width=${width}%")`;
+
+    setContent((currentContent) =>
+      currentContent.replace(oldMarkdown, newMarkdown)
+    );
+
+    setImageWidth((current) => ({
+      ...current,
+      width,
+    }));
+  }
 
   return (
     <main className="editor-page">
@@ -128,9 +161,13 @@ function NewArticle() {
 
           <div className="editor-meta">
             <div className="editor-meta-row">
-              <input type="text" value={category}
+              <input
+                type="text"
+                value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                placeholder="Category" />
+                placeholder="Category"
+              />
+
               <div className="image-upload">
                 <label
                   htmlFor="image-upload"
@@ -151,22 +188,16 @@ function NewArticle() {
                   <div className="image-size-picker">
                     <span>Image size:</span>
 
-                    {[25, 50, 75, 100].map((width) => (
+                    {[25, 50, 75, 80, 100].map((width) => (
                       <button
                         key={width}
                         type="button"
-                        onClick={() => {
-                          const markdown =
-                            `![${imageWidth.alt}](${imageWidth.url} "width=${width}%")`;
-
-                          setContent((currentContent) =>
-                            currentContent.length === 0
-                              ? markdown
-                              : `${currentContent}\n\n${markdown}`
-                          );
-
-                          setImageWidth(null);
-                        }}
+                        className={
+                          imageWidth.width === width
+                            ? 'active'
+                            : ''
+                        }
+                        onClick={() => changeImageWidth(width)}
                       >
                         {width}%
                       </button>
@@ -175,9 +206,13 @@ function NewArticle() {
                 )}
               </div>
             </div>
-            <input type="text" value={description}
+
+            <input
+              type="text"
+              value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Short description" />
+              placeholder="Short description"
+            />
           </div>
 
           <textarea
@@ -220,8 +255,12 @@ Map<String, Integer> map = new HashMap<>();
                   remarkPlugins={[remarkGfm]}
                   components={{
                     img: ({ node, ...props }) => {
-                      const widthMatch = props.title?.match(/width=(\d+)%/);
-                      const width = widthMatch ? `${widthMatch[1]}%` : '100%';
+                      const widthMatch =
+                        props.title?.match(/width=(\d+)%/);
+
+                      const width = widthMatch
+                        ? `${widthMatch[1]}%`
+                        : '100%';
 
                       return (
                         <img
