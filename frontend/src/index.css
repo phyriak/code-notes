@@ -1169,3 +1169,37 @@ form.editor {
   display: block;
   margin: 20px 0;
 }
+
+.image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.image-size-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.image-size-picker span {
+  color: #64748b;
+  margin-right: 2px;
+}
+
+.image-size-picker button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.image-size-picker button:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}

@@ -132,13 +132,21 @@ function NewArticle() {
                 onChange={(event) => setCategory(event.target.value)}
                 placeholder="Category" />
               <div className="image-upload">
-                <label htmlFor="image-upload"
-                  className="image-upload-button" > Add image
+                <label
+                  htmlFor="image-upload"
+                  className="image-upload-button"
+                >
+                  Add image
                 </label>
 
-                <input id="image-upload" type="file"
+                <input
+                  id="image-upload"
+                  type="file"
                   accept="image/png,image/jpeg,image/webp,image/gif"
-                  onChange={handleImageUpload} hidden />
+                  onChange={handleImageUpload}
+                  hidden
+                />
+
                 {imageWidth && (
                   <div className="image-size-picker">
                     <span>Image size:</span>
@@ -151,13 +159,11 @@ function NewArticle() {
                           const markdown =
                             `![${imageWidth.alt}](${imageWidth.url} "width=${width}%")`;
 
-                          setContent((currentContent) => {
-                            if (currentContent.length === 0) {
-                              return markdown;
-                            }
-
-                            return `${currentContent}\n\n${markdown}`;
-                          });
+                          setContent((currentContent) =>
+                            currentContent.length === 0
+                              ? markdown
+                              : `${currentContent}\n\n${markdown}`
+                          );
 
                           setImageWidth(null);
                         }}
