@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 import {
   MDXEditor,
   headingsPlugin,
@@ -201,19 +204,31 @@ function NewArticle() {
 
             <div className="article-content">
               {content ? (
-                <div className="markdown-preview">
-                  <MDXEditor
-                    markdown={content}
-                    readOnly
-                    plugins={[
-                      headingsPlugin(),
-                      listsPlugin(),
-                      quotePlugin(),
-                      thematicBreakPlugin(),
-                      markdownShortcutPlugin(),
-                    ]}
-                  />
-                </div>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    img: ({ node, ...props }) => {
+                      const widthMatch = props.title?.match(/width=(\d+)%/);
+                      const width = widthMatch
+                        ? `${widthMatch[1]}%`
+                        : '80%';
+
+                      return (
+                        <img
+                          {...props}
+                          title={undefined}
+                          style={{
+                            width,
+                            height: 'auto',
+                            display: 'block',
+                          }}
+                        />
+                      );
+                    },
+                  }}
+                >
+                  {content}
+                </ReactMarkdown>
               ) : (
                 <div className="empty-preview">
                   Your article preview will appear here.
