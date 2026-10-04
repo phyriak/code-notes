@@ -1,9 +1,10 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import crypto from 'crypto';
 import cors from 'cors';
 import pool from './db.js';
+import crypto from 'crypto';
+import sharp from 'sharp';
+
 
 const app = express();
 console.log('SERVER.JS LOADED');
@@ -22,20 +23,8 @@ app.use(
 );
 
 //Multer
-
-const storage = multer.diskStorage({
-  destination: '/app/uploads',
-
-  filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    const filename = `${crypto.randomUUID()}${extension}`;
-
-    cb(null, filename);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
 
   limits: {
     fileSize: 5 * 1024 * 1024, // 5 MB
@@ -245,7 +234,7 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-app.post('/api/images', upload.single('image'), (req, res) => {
+app.post('/api/images', upload.single('image'), async (req, res) => {
   console.log('IMAGE UPLOAD HANDLER');
 
   if (!req.file) {
@@ -254,9 +243,30 @@ app.post('/api/images', upload.single('image'), (req, res) => {
     });
   }
 
-  res.status(201).json({
-    url: `/uploads/${req.file.filename}`,
-  });
+  try {
+    const filename = `${crypto.randomUUID()}.webp`;
+    const outputPath = `/app/uploads/${filename}`;
+
+    await sharp(req.file.buffer)
+      .resize({
+        width: 1600,
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: 85,
+      })
+      .toFile(outputPath);
+
+    res.status(201).json({
+      url: `/uploads/${filename}`,
+    });
+  } catch (error) {
+    console.error('Failed to process image:', error);
+
+    res.status(500).json({
+      error: 'Failed to process image',
+    });
+  }
 });
 
 app.get('/api/health', (req, res) => {

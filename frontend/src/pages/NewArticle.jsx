@@ -65,32 +65,32 @@ function NewArticle() {
     }
   }
 
- async function handleImageUpload(event) {
-  const file = event.target.files[0];
+  async function handleImageUpload(event) {
+    const file = event.target.files[0];
 
-  if (!file) {
-    return;
+    if (!file) {
+      return;
+    }
+
+    try {
+      const data = await uploadImage(file);
+
+      const markdown = `![${file.name}](${data.url})`;
+
+      setContent((currentContent) => {
+        if (currentContent.length === 0) {
+          return markdown;
+        }
+
+        return `${currentContent}\n\n${markdown}`;
+      });
+    } catch (error) {
+      console.error(error);
+      alert('Failed to upload image');
+    } finally {
+      event.target.value = '';
+    }
   }
-
-  try {
-    const data = await uploadImage(file);
-
-    const markdown = `![${file.name}](${data.url})`;
-
-    setContent((currentContent) => {
-      if (currentContent.length === 0) {
-        return markdown;
-      }
-
-      return `${currentContent}\n\n${markdown}`;
-    });
-  } catch (error) {
-    console.error(error);
-    alert('Failed to upload image');
-  } finally {
-    event.target.value = '';
-  }
-}
 
   return (
     <main className="editor-page">
@@ -129,35 +129,22 @@ function NewArticle() {
           />
 
           <div className="editor-meta">
-            <input
-              type="text"
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              placeholder="Category"
-            />
-
-            <div className="image-upload">
-              <label htmlFor="image-upload" className="image-upload-button">
-                Add image
-              </label>
-
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                onChange={handleImageUpload}
-                hidden
-              />
+            <div className="editor-meta-row">
+              <input type="text" value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                placeholder="Category" />
+              <div className="image-upload">
+                <label htmlFor="image-upload"
+                  className="image-upload-button" > Add image
+                </label>
+                <input id="image-upload" type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  onChange={handleImageUpload} hidden />
+              </div>
             </div>
-
-            <input
-              type="text"
-              value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
-              placeholder="Short description"
-            />
+            <input type="text" value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Short description" />
           </div>
 
           <textarea

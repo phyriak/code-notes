@@ -1122,3 +1122,43 @@ form.editor {
 .image-upload-button:hover {
   background: #f3f4f6;
 }
+
+.editor-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.editor-meta-row > input {
+  flex: 1;
+}
+
+.image-upload {
+  display: flex;
+  align-items: center;
+}
+
+.image-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  color: #334155;
+
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.image-upload-button:hover {
+  background: #f8fafc;
+}
