@@ -15,6 +15,7 @@ function NewArticle() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [imageWidth, setImageWidth] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
@@ -64,7 +65,7 @@ function NewArticle() {
       console.error(error);
     }
   }
-  const [imageWidth, setImageWidth] = useState('100%');
+
 
   async function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -76,23 +77,9 @@ function NewArticle() {
     try {
       const data = await uploadImage(file);
 
-      const width = window.prompt(
-        'Image width: 25, 50, 75 or 100',
-        '100'
-      );
-
-      const selectedWidth = ['25', '50', '75', '100'].includes(width)
-        ? width
-        : '100';
-
-      const markdown = `![image](${data.url} "width=${selectedWidth}%")`;
-
-      setContent((currentContent) => {
-        if (currentContent.length === 0) {
-          return markdown;
-        }
-
-        return `${currentContent}\n\n${markdown}`;
+      setImageWidth({
+        url: data.url,
+        alt: file.name,
       });
     } catch (error) {
       console.error(error);
@@ -101,6 +88,8 @@ function NewArticle() {
       event.target.value = '';
     }
   }
+
+
   return (
     <main className="editor-page">
       <div className="editor-topbar">
@@ -146,9 +135,38 @@ function NewArticle() {
                 <label htmlFor="image-upload"
                   className="image-upload-button" > Add image
                 </label>
+
                 <input id="image-upload" type="file"
                   accept="image/png,image/jpeg,image/webp,image/gif"
                   onChange={handleImageUpload} hidden />
+                {imageWidth && (
+                  <div className="image-size-picker">
+                    <span>Image size:</span>
+
+                    {[25, 50, 75, 100].map((width) => (
+                      <button
+                        key={width}
+                        type="button"
+                        onClick={() => {
+                          const markdown =
+                            `![${imageWidth.alt}](${imageWidth.url} "width=${width}%")`;
+
+                          setContent((currentContent) => {
+                            if (currentContent.length === 0) {
+                              return markdown;
+                            }
+
+                            return `${currentContent}\n\n${markdown}`;
+                          });
+
+                          setImageWidth(null);
+                        }}
+                      >
+                        {width}%
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <input type="text" value={description}
