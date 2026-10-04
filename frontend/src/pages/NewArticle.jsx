@@ -11,6 +11,7 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
+  imagePlugin,
   toolbarPlugin,
   UndoRedo,
   BoldItalicUnderlineToggles,
@@ -101,6 +102,7 @@ function NewArticle() {
     try {
       const data = await uploadImage(file);
 
+      // Domyślna szerokość obrazu
       const markdown =
         `![${file.name}](${data.url} "width=80%")`;
 
@@ -120,11 +122,13 @@ function NewArticle() {
     <main className="editor-page">
 
       <div className="editor-topbar">
+
         <Link to="/" className="editor-back">
           ← All notes
         </Link>
 
         <div className="editor-actions">
+
           <span className="editor-status">
             {isEditMode ? 'Editing' : 'Draft'}
           </span>
@@ -136,6 +140,7 @@ function NewArticle() {
           >
             {isEditMode ? 'Update article' : 'Save article'}
           </button>
+
         </div>
       </div>
 
@@ -145,7 +150,7 @@ function NewArticle() {
         onSubmit={handleSubmit}
       >
 
-        {/* LEFT / EDITOR */}
+        {/* EDITOR */}
 
         <section className="editor-panel">
 
@@ -211,6 +216,8 @@ function NewArticle() {
                 thematicBreakPlugin(),
                 markdownShortcutPlugin(),
 
+                imagePlugin(),
+
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
@@ -227,7 +234,7 @@ function NewArticle() {
 
         </section>
 
-        {/* RIGHT / PREVIEW */}
+        {/* PREVIEW */}
 
         <section className="preview-panel">
 
