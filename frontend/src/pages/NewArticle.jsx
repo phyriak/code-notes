@@ -7,6 +7,7 @@ import {
   getArticle,
   createArticle,
   updateArticle,
+  uploadImage
 } from '../api/articles';
 
 function NewArticle() {
@@ -64,44 +65,32 @@ function NewArticle() {
     }
   }
 
-  async function handleImageUpload(event) {
-    const file = event.target.files[0];
+ async function handleImageUpload(event) {
+  const file = event.target.files[0];
 
-    if (!file) {
-      return;
-    }
+  if (!file) {
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('image', file);
+  try {
+    const data = await uploadImage(file);
 
-    try {
-      const response = await fetch('http://localhost:3200/api/images', {
-        method: 'POST',
-        body: formData,
-      });
+    const markdown = `![${file.name}](${data.url})`;
 
-      if (!response.ok) {
-        throw new Error('Image upload failed');
+    setContent((currentContent) => {
+      if (currentContent.length === 0) {
+        return markdown;
       }
 
-      const data = await response.json();
-
-      const markdown = `![${file.name}](${data.url})`;
-
-      setContent((currentContent) => {
-        if (currentContent.length === 0) {
-          return markdown;
-        }
-
-        return `${currentContent}\n\n${markdown}`;
-      });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to upload image');
-    } finally {
-      event.target.value = '';
-    }
+      return `${currentContent}\n\n${markdown}`;
+    });
+  } catch (error) {
+    console.error(error);
+    alert('Failed to upload image');
+  } finally {
+    event.target.value = '';
   }
+}
 
   return (
     <main className="editor-page">

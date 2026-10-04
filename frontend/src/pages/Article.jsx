@@ -77,7 +77,6 @@ function Article() {
     });
   }
 
-
   return (
     <main>
       <div className="article-actions">

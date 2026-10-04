@@ -21,6 +21,9 @@ services:
     container_name: code-notes-backend
     restart: unless-stopped
 
+    volumes:
+      - ./uploads:/app/uploads
+
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
@@ -32,7 +35,7 @@ services:
       - postgres
 
     ports:
-      - "3100:3000"
+      - "3100:3100"
 
 volumes:
   code_notes_postgres_data:

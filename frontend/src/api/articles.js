@@ -71,3 +71,19 @@ export async function getCategories() {
 
   return response.json();
 }
+
+export async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`${API_URL}/images`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Image upload failed');
+  }
+
+  return response.json();
+}

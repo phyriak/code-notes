@@ -9,7 +9,7 @@ import {
 import Home from './pages/Home';
 import Article from './pages/Article';
 import NewArticle from './pages/NewArticle';
-
+import { getCategories } from './api/articles';
 
 
 function App() {
@@ -18,16 +18,7 @@ function App() {
   useEffect(() => {
   async function fetchCategories() {
     try {
-      const response = await fetch(
-        'http://localhost:3200/api/categories'
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
-
-      const data = await response.json();
-
+      const data = await getCategories();
       setCategories(data);
     } catch (error) {
       console.error(error);
