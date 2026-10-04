@@ -11,7 +11,6 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
-  imagePlugin,
   toolbarPlugin,
   UndoRedo,
   BoldItalicUnderlineToggles,
@@ -49,10 +48,17 @@ function NewArticle() {
       try {
         const article = await getArticle(id);
 
-        setTitle(article.title);
-        setCategory(article.category);
+        setTitle(article.title || '');
+        setCategory(article.category || '');
         setDescription(article.description || '');
-        setContent(article.content || '');
+
+        const articleContent = article.content || '';
+
+        setContent(articleContent);
+
+        // MDXEditor nie jest w pełni controlled component.
+        // Dlatego ustawiamy zawartość bezpośrednio w edytorze.
+        editorRef.current?.setMarkdown(articleContent);
       } catch (error) {
         console.error('Failed to fetch article:', error);
       }
@@ -98,6 +104,7 @@ function NewArticle() {
       const markdown =
         `![${file.name}](${data.url} "width=80%")`;
 
+      // Wstawiamy obraz w aktualnym miejscu kursora.
       editorRef.current?.insertMarkdown(
         `\n\n${markdown}\n\n`
       );
@@ -111,6 +118,7 @@ function NewArticle() {
 
   return (
     <main className="editor-page">
+
       <div className="editor-topbar">
         <Link to="/" className="editor-back">
           ← All notes
@@ -136,7 +144,11 @@ function NewArticle() {
         className="editor"
         onSubmit={handleSubmit}
       >
+
+        {/* LEFT / EDITOR */}
+
         <section className="editor-panel">
+
           <input
             className="editor-title"
             type="text"
@@ -146,7 +158,9 @@ function NewArticle() {
           />
 
           <div className="editor-meta">
+
             <div className="editor-meta-row">
+
               <input
                 type="text"
                 value={category}
@@ -155,6 +169,7 @@ function NewArticle() {
               />
 
               <div className="image-upload">
+
                 <label
                   htmlFor="image-upload"
                   className="image-upload-button"
@@ -169,7 +184,9 @@ function NewArticle() {
                   onChange={handleImageUpload}
                   hidden
                 />
+
               </div>
+
             </div>
 
             <input
@@ -178,9 +195,11 @@ function NewArticle() {
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Short description"
             />
+
           </div>
 
           <div className="markdown-editor">
+
             <MDXEditor
               ref={editorRef}
               markdown={content}
@@ -191,7 +210,7 @@ function NewArticle() {
                 quotePlugin(),
                 thematicBreakPlugin(),
                 markdownShortcutPlugin(),
-                imagePlugin(),
+
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
@@ -203,16 +222,24 @@ function NewArticle() {
                 }),
               ]}
             />
+
           </div>
+
         </section>
 
+        {/* RIGHT / PREVIEW */}
+
         <section className="preview-panel">
+
           <div className="preview-header">
             <span>PREVIEW</span>
           </div>
 
           <article className="article-preview">
-            {title && <h1>{title}</h1>}
+
+            {title && (
+              <h1>{title}</h1>
+            )}
 
             {description && (
               <p className="preview-description">
@@ -227,11 +254,13 @@ function NewArticle() {
             )}
 
             <div className="article-content">
+
               {content ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
                     img: ({ node, ...props }) => {
+
                       const widthMatch =
                         props.title?.match(/width=(\d+)%/);
 
@@ -260,10 +289,15 @@ function NewArticle() {
                   Your article preview will appear here.
                 </div>
               )}
+
             </div>
+
           </article>
+
         </section>
+
       </form>
+
     </main>
   );
 }
