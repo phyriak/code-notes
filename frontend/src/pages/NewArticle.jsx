@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import ReactMarkdown from 'react-markdown';
@@ -11,12 +11,10 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
-  imagePlugin,
   toolbarPlugin,
   UndoRedo,
   BoldItalicUnderlineToggles,
   CreateLink,
-  InsertImage,
 } from '@mdxeditor/editor';
 
 import '@mdxeditor/editor/style.css';
@@ -33,6 +31,7 @@ function NewArticle() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const editorRef = useRef(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -84,14 +83,27 @@ function NewArticle() {
     }
   }
 
-  async function handleImageUpload(file) {
+  async function handleImageUpload(event) {
+    const file = event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
     try {
       const data = await uploadImage(file);
 
-      return data.url;
+      const markdown =
+        `![${file.name}](${data.url} "width=80%")`;
+
+      editorRef.current?.insertMarkdown(
+        `\n\n${markdown}\n\n`
+      );
     } catch (error) {
       console.error('Failed to upload image:', error);
-      throw error;
+      alert('Failed to upload image');
+    } finally {
+      event.target.value = '';
     }
   }
 
@@ -139,6 +151,23 @@ function NewArticle() {
                 onChange={(event) => setCategory(event.target.value)}
                 placeholder="Category"
               />
+
+              <div className="image-upload">
+                <label
+                  htmlFor="image-upload"
+                  className="image-upload-button"
+                >
+                  Add image
+                </label>
+
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  onChange={handleImageUpload}
+                  hidden
+                />
+              </div>
             </div>
 
             <input
@@ -151,6 +180,7 @@ function NewArticle() {
 
           <div className="markdown-editor">
             <MDXEditor
+              ref={editorRef}
               markdown={content}
               onChange={setContent}
               plugins={[
@@ -159,21 +189,12 @@ function NewArticle() {
                 quotePlugin(),
                 thematicBreakPlugin(),
                 markdownShortcutPlugin(),
-
-                imagePlugin({
-                  imageUploadHandler: handleImageUpload,
-                }),
-
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
                       <UndoRedo />
-
                       <BoldItalicUnderlineToggles />
-
                       <CreateLink />
-
-                      <InsertImage />
                     </>
                   ),
                 }),
