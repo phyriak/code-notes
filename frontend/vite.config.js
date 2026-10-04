@@ -1,6 +1,6 @@
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.production.VITE_BACKEND_URL,
+          target: env.VITE_BACKEND_URL,
           changeOrigin: true,
         },
       },
