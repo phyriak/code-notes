@@ -11,6 +11,7 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
+  imagePlugin,
   toolbarPlugin,
   UndoRedo,
   BoldItalicUnderlineToggles,
@@ -31,6 +32,7 @@ function NewArticle() {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+
   const editorRef = useRef(null);
 
   const { id } = useParams();
@@ -189,6 +191,7 @@ function NewArticle() {
                 quotePlugin(),
                 thematicBreakPlugin(),
                 markdownShortcutPlugin(),
+                imagePlugin(),
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
@@ -229,7 +232,9 @@ function NewArticle() {
                   remarkPlugins={[remarkGfm]}
                   components={{
                     img: ({ node, ...props }) => {
-                      const widthMatch = props.title?.match(/width=(\d+)%/);
+                      const widthMatch =
+                        props.title?.match(/width=(\d+)%/);
+
                       const width = widthMatch
                         ? `${widthMatch[1]}%`
                         : '80%';
@@ -264,4 +269,3 @@ function NewArticle() {
 }
 
 export default NewArticle;
-
