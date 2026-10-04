@@ -31,6 +31,9 @@ services:
     ports:
     - "3201:3201"
 
+    volumes:
+    - ./uploads:/app/uploads
+
   frontend:
     image: phyriak/code-notes-frontend:latest
     container_name: code-notes-frontend
