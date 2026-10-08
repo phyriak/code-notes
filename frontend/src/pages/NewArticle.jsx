@@ -100,6 +100,19 @@ function NewArticle() {
       return;
     }
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeInMb = (file.size / 1024 / 1024).toFixed(1);
+
+      alert(
+        `Image is too large (${sizeInMb} MB).\nMaximum allowed size is 5 MB.`
+      );
+
+      event.target.value = '';
+      return;
+    }
+
     try {
       const data = await uploadImage(file);
 
