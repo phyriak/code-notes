@@ -48,7 +48,7 @@ const upload = multer({
 //
 
 app.get('/api/articles', async (req, res) => {
-console.log('ARTICLES ENDPOINT HIT');
+  console.log('ARTICLES ENDPOINT HIT');
 
   try {
     const result = await pool.query(
@@ -248,6 +248,7 @@ app.post('/api/images', upload.single('image'), async (req, res) => {
     const outputPath = `/app/uploads/${filename}`;
 
     await sharp(req.file.buffer)
+      .rotate()
       .resize({
         width: 1600,
         withoutEnlargement: true,

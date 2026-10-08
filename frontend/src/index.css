@@ -675,6 +675,11 @@ main {
   line-height: 1.8;
 }
 
+.markdown-editor .mdxeditor-root img {
+  max-width: 100%;
+  height: auto;
+}
+
 .markdown-editor::placeholder {
   color: #c4c9d1;
 }
