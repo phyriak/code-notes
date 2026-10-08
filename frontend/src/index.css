@@ -680,6 +680,7 @@ main {
   height: auto;
 }
 
+
 .markdown-editor::placeholder {
   color: #c4c9d1;
 }
@@ -1207,4 +1208,37 @@ form.editor {
 .image-size-picker button:hover {
   background: #f1f5f9;
   border-color: #94a3b8;
+}
+
+.editor-panel {
+  min-width: 0;
+}
+
+.markdown-editor {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.markdown-editor .mdxeditor-root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.markdown-editor .mdxeditor-root-contenteditable {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.article-editor-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.article-editor-content img {
+  max-width: 100%;
+  height: auto;
 }

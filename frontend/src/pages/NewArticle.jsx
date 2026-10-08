@@ -233,6 +233,7 @@ function NewArticle() {
               ref={editorRef}
               markdown={content}
               onChange={setContent}
+              contentEditableClassName="article-editor-content"
               plugins={[
 
                 headingsPlugin(),
