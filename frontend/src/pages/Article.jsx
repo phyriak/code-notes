@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import rehypeRaw from 'rehype-raw';
 import {
   getArticle,
   deleteArticle,
@@ -122,6 +123,7 @@ function Article() {
         <div className="article-content">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
             components={{
               img: ({ node, ...props }) => {
                 const width = props.title?.replace('width:', '') || '100%';
@@ -131,7 +133,7 @@ function Article() {
                     {...props}
                     title={undefined}
                     style={{
-                      width,
+                      maxWidth: '100%',
                       height: 'auto',
                       display: 'block',
                     }}
